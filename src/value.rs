@@ -83,3 +83,42 @@ pub enum HashablePrimitive {
     Char(char),
     Bool(bool),
 }
+
+impl ToString for HashablePrimitive {
+    fn to_string(&self) -> String {
+        match self {
+            HashablePrimitive::Integer(i) => i.to_string(),
+            HashablePrimitive::String(s) => s.to_owned(),
+            HashablePrimitive::Char(c) => c.to_string(),
+            HashablePrimitive::Bool(b) => b.to_string(),
+        }
+    }
+}
+
+impl ToString for Integer {
+    fn to_string(&self) -> String {
+        match self {
+            Integer::USize(n) => n.to_string(),
+            Integer::ISize(n) => n.to_string(),
+            Integer::U8(n) => n.to_string(),
+            Integer::I8(n) => n.to_string(),
+            Integer::U16(n) => n.to_string(),
+            Integer::I16(n) => n.to_string(),
+            Integer::U32(n) => n.to_string(),
+            Integer::I32(n) => n.to_string(),
+            Integer::U64(n) => n.to_string(),
+            Integer::I64(n) => n.to_string(),
+            Integer::U128(n) => n.to_string(),
+            Integer::I128(n) => n.to_string(),
+        }
+    }
+}
+
+impl ToString for Float {
+    fn to_string(&self) -> String {
+        match self {
+            Float::F32(f) => f.to_string(),
+            Float::F64(f) => f.to_string(),
+        }
+    }
+}

@@ -11,84 +11,98 @@ pub trait HashableRustyValue {
 }
 
 impl HashableRustyValue for usize {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::USize(self)))
     }
 }
 
 impl HashableRustyValue for isize {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::ISize(self)))
     }
 }
 
 impl HashableRustyValue for u8 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::U8(self)))
     }
 }
 
 impl HashableRustyValue for i8 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::I8(self)))
     }
 }
 
 impl HashableRustyValue for u16 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::U16(self)))
     }
 }
 
 impl HashableRustyValue for i16 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::I16(self)))
     }
 }
 
 impl HashableRustyValue for u32 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::U32(self)))
     }
 }
 
 impl HashableRustyValue for i32 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::I32(self)))
     }
 }
 
 impl HashableRustyValue for u64 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::U64(self)))
     }
 }
 
 impl HashableRustyValue for i64 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::I64(self)))
     }
 }
 
 impl HashableRustyValue for u128 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::U128(self)))
     }
 }
 
 impl HashableRustyValue for i128 {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Integer(crate::Integer::I128(self)))
     }
 }
 
 impl HashableRustyValue for String {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::String(self))
     }
 }
 
 impl HashableRustyValue for bool {
+    #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
         HashableValue::Primitive(HashablePrimitive::Bool(self))
     }
@@ -111,18 +125,21 @@ impl RustyValue for HashableValue {
 }
 
 impl<H: HashableRustyValue> RustyValue for H {
+    #[inline]
     fn into_rusty_value(self) -> Value {
         self.into_hashable_rusty_value().into_rusty_value()
     }
 }
 
 impl RustyValue for f32 {
+    #[inline]
     fn into_rusty_value(self) -> Value {
         Value::Primitive(Primitive::Float(Float::F32(self)))
     }
 }
 
 impl RustyValue for f64 {
+    #[inline]
     fn into_rusty_value(self) -> Value {
         Value::Primitive(Primitive::Float(Float::F64(self)))
     }
