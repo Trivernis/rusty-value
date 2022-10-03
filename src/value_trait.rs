@@ -101,6 +101,12 @@ impl HashableRustyValue for String {
     }
 }
 
+impl<'a> HashableRustyValue for &'a str {
+    fn into_hashable_rusty_value(self) -> HashableValue {
+        self.to_string().into_hashable_rusty_value()
+    }
+}
+
 impl HashableRustyValue for bool {
     #[inline]
     fn into_hashable_rusty_value(self) -> HashableValue {
