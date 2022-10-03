@@ -1,6 +1,9 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DataStruct, DeriveInput, FieldsNamed, FieldsUnnamed};
+use syn::{
+    parse_macro_input, parse_quote, DataStruct, DeriveInput, FieldsNamed, FieldsUnnamed, Generics,
+    WhereClause, WherePredicate,
+};
 
 #[proc_macro_derive(RustyValue)]
 pub fn derive_value(input: TokenStream) -> TokenStream {
@@ -18,7 +21,8 @@ fn derive(input: DeriveInput) -> TokenStream {
 fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
     let ident = &input.ident;
     let name = ident.to_string();
-    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let (impl_generics, ty_generics, _) = input.generics.split_for_impl();
+    let where_clause = add_rusty_bound(&input.generics);
 
     match &struct_data.fields {
         syn::Fields::Named(FieldsNamed { named, .. }) => {
@@ -81,4 +85,20 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
                 }
         }),
     }
+}
+
+fn add_rusty_bound(generics: &Generics) -> WhereClause {
+    let trait_bound: proc_macro2::TokenStream = parse_quote!(rusty_value::RustyValue);
+
+    let new_predicates = generics.type_params().map::<WherePredicate, _>(|param| {
+        let param = &param.ident;
+        parse_quote!(#param : #trait_bound)
+    });
+
+    let mut generics = generics.clone();
+    generics
+        .make_where_clause()
+        .predicates
+        .extend(new_predicates);
+    generics.where_clause.unwrap()
 }

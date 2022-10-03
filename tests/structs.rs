@@ -66,3 +66,27 @@ fn it_handles_unit_structs() {
         panic!("Struct wasn't serialized as struct");
     }
 }
+
+#[derive(RustyValue)]
+struct GenericStruct<T: Clone> {
+    field: T,
+}
+
+#[test]
+fn it_handles_generics() {
+    let test_struct = GenericStruct::<u8> { field: 12 };
+    let value = test_struct.into_rusty_value();
+    dbg!(&value);
+
+    if let Value::Struct(s) = value {
+        assert_eq!(&s.name, "GenericStruct");
+
+        if let StructFields::Named(fields) = s.fields {
+            assert_eq!(fields.len(), 1);
+        } else {
+            panic!("Struct wasn't serialized as named struct")
+        }
+    } else {
+        panic!("Struct wasn't serialized as struct");
+    }
+}
