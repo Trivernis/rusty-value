@@ -1,8 +1,9 @@
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
 use syn::{
-    parse_macro_input, parse_quote, DataStruct, DeriveInput, FieldsNamed, FieldsUnnamed, Generics,
-    WhereClause, WherePredicate,
+    parse_macro_input, parse_quote, DataEnum, DataStruct, DeriveInput, FieldsNamed, FieldsUnnamed,
+    Generics, Variant, WhereClause, WherePredicate,
 };
 
 #[proc_macro_derive(RustyValue)]
@@ -13,7 +14,7 @@ pub fn derive_value(input: TokenStream) -> TokenStream {
 fn derive(input: DeriveInput) -> TokenStream {
     match &input.data {
         syn::Data::Struct(s) => derive_struct(&input, s),
-        syn::Data::Enum(_) => todo!(),
+        syn::Data::Enum(e) => derive_enum(&input, e),
         syn::Data::Union(_) => panic!("unions are currently unsupported"),
     }
 }
@@ -45,7 +46,7 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
 
                         Value::Struct(Struct{
                             name: #name.to_string(),
-                            fields: StructFields::Named(values),
+                            fields: Fields::Named(values),
                         })
                     }
                 }
@@ -71,7 +72,7 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
 
                         Value::Struct(Struct{
                             name: #name.to_string(),
-                            fields: StructFields::Unnamed(values),
+                            fields: Fields::Unnamed(values),
                         })
                     }
                 }
@@ -80,10 +81,104 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
         syn::Fields::Unit => TokenStream::from(quote! {
                 impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
                     fn into_rusty_value(self) -> rusty_value::Value {
-                        Value::Unit(#name.to_string())
+                        use rusty_value::*;
+                        Value::Struct(Struct{
+                            name: #name.to_string(),
+                            fields: Fields::Unit,
+                        })
                     }
                 }
         }),
+    }
+}
+
+fn derive_enum(input: &DeriveInput, enum_data: &DataEnum) -> TokenStream {
+    let ident = &input.ident;
+    let (impl_generics, ty_generics, _) = input.generics.split_for_impl();
+    let where_clause = add_rusty_bound(&input.generics);
+    let variant_matchers = enum_data
+        .variants
+        .iter()
+        .map(|v| create_enum_value_match(ident, v))
+        .collect::<Vec<_>>();
+
+    TokenStream::from(quote! {
+        impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
+            fn into_rusty_value(self) -> rusty_value::Value {
+                let enum_val = match self {
+                    #( #variant_matchers )*
+                };
+                rusty_value::Value::Enum(enum_val)
+            }
+        }
+    })
+}
+
+fn create_enum_value_match(ident: &syn::Ident, variant: &Variant) -> proc_macro2::TokenStream {
+    let enum_name = ident.to_string();
+    let variant_ident = &variant.ident;
+    let variant_name = variant_ident.to_string();
+
+    match &variant.fields {
+        syn::Fields::Named(FieldsNamed { named, .. }) => {
+            let field_idents = named.iter().map(|f| &f.ident).collect::<Vec<_>>();
+            let field_names = named
+                .iter()
+                .map(|f| f.ident.as_ref().unwrap().to_string())
+                .collect::<Vec<_>>();
+            let field_count = named.len();
+
+            quote! {
+                #ident::#variant_ident { #( #field_idents, )* } => {
+                    use rusty_value::*;
+
+                    let mut fields = std::collections::HashMap::with_capacity(#field_count);
+                    #(
+                        fields.insert(#field_names.to_string(), #field_idents.into_rusty_value());
+                    )*
+                    Enum {
+                        name: #enum_name.to_string(),
+                        variant: #variant_name.to_string(),
+                        fields: Fields::Named(fields)
+                    }
+                }
+            }
+        }
+        syn::Fields::Unnamed(FieldsUnnamed { unnamed, .. }) => {
+            let field_names = unnamed
+                .iter()
+                .enumerate()
+                .map(|(i, _)| syn::Ident::new(&format!("f{i}"), Span::call_site()))
+                .collect::<Vec<_>>();
+            let field_count = unnamed.len();
+
+            quote! {
+                #ident::#variant_ident ( #( #field_names, )* ) => {
+                    use rusty_value::*;
+
+                    let mut fields = Vec::with_capacity(#field_count);
+                    #(
+                        fields.push(#field_names.into_rusty_value());
+                    )*
+                    Enum {
+                        name: #enum_name.to_string(),
+                        variant: #variant_name.to_string(),
+                        fields: Fields::Unnamed(fields)
+                    }
+                }
+            }
+        }
+        syn::Fields::Unit => quote! {
+            #ident::#variant_ident => {
+                use rusty_value::*;
+
+                Enum {
+                    name: #enum_name.to_string(),
+                    variant: #variant_name.to_string(),
+                    fields: Fields::Unit
+                }
+            }
+        },
     }
 }
 

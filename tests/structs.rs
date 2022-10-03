@@ -1,4 +1,4 @@
-use rusty_value::{RustyValue, StructFields, Value};
+use rusty_value::{Fields, RustyValue, Value};
 use rusty_value_derive::*;
 
 #[derive(RustyValue)]
@@ -19,7 +19,7 @@ fn it_handles_named_fields() {
     if let Value::Struct(s) = value {
         assert_eq!(&s.name, "TestStructNamed");
 
-        if let StructFields::Named(fields) = s.fields {
+        if let Fields::Named(fields) = s.fields {
             assert_eq!(fields.len(), 2);
         } else {
             panic!("Struct wasn't serialized as named struct")
@@ -41,7 +41,7 @@ fn it_handles_unnamed_fields() {
     if let Value::Struct(s) = value {
         assert_eq!(&s.name, "TestStructUnnamed");
 
-        if let StructFields::Unnamed(fields) = s.fields {
+        if let Fields::Unnamed(fields) = s.fields {
             assert_eq!(fields.len(), 2);
         } else {
             panic!("Struct wasn't serialized as unnamed struct")
@@ -60,8 +60,13 @@ fn it_handles_unit_structs() {
     let value = test_struct.into_rusty_value();
     dbg!(&value);
 
-    if let Value::Unit(s) = value {
-        assert_eq!(&s, "TestStructUnit");
+    if let Value::Struct(s) = value {
+        assert_eq!(&s.name, "TestStructUnit");
+        if let Fields::Unit = s.fields {
+            assert!(true);
+        } else {
+            panic!("Struct wasn't serialized as unit struct")
+        }
     } else {
         panic!("Struct wasn't serialized as struct");
     }
@@ -81,7 +86,7 @@ fn it_handles_generics() {
     if let Value::Struct(s) = value {
         assert_eq!(&s.name, "GenericStruct");
 
-        if let StructFields::Named(fields) = s.fields {
+        if let Fields::Named(fields) = s.fields {
             assert_eq!(fields.len(), 1);
         } else {
             panic!("Struct wasn't serialized as named struct")

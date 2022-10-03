@@ -7,26 +7,26 @@ pub enum Value {
     Enum(Enum),
     Map(HashMap<HashablePrimitive, Value>),
     List(Vec<Value>),
-    Unit(String),
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Enum {
     pub name: String,
     pub variant: String,
-    pub value: Box<Value>,
+    pub fields: Fields,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Struct {
     pub name: String,
-    pub fields: StructFields,
+    pub fields: Fields,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum StructFields {
+pub enum Fields {
     Named(HashMap<String, Value>),
     Unnamed(Vec<Value>),
+    Unit,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
