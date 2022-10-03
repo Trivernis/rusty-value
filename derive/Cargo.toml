@@ -2,6 +2,10 @@
 name = "rusty-value-derive"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/Trivernis/rusty-value"
+description = "Derive implementaton for rusty-value"
+authors = ["trivernis <trivernis@proton.me>"]
 
 [lib]
 proc-macro = true

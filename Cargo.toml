@@ -5,6 +5,10 @@ members = [".", "derive"]
 name = "rusty-value"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/Trivernis/rusty-value"
+description = "Create a generic inspectable value from any rust type"
+authors = ["trivernis <trivernis@proton.me>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
