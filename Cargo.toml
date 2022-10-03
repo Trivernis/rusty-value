@@ -1,0 +1,20 @@
+[workspace]
+members = [".", "derive"]
+
+[package]
+name = "rusty-value"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.rusty-value-derive]
+path = "./derive"
+optional = true
+
+[features]
+default = []
+derive = ["rusty-value-derive"]
+
+[dev-dependencies.rusty-value-derive]
+path = "./derive"
