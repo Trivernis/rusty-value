@@ -35,11 +35,11 @@ fn it_handles_named_fields() {
 }
 
 #[derive(RustyValue)]
-struct TestStructUnnamed(String, u64);
+struct TestStructUnnamed(String, u64, Option<String>);
 
 #[test]
 fn it_handles_unnamed_fields() {
-    let test_struct = TestStructUnnamed(String::from("Hello World"), 12);
+    let test_struct = TestStructUnnamed(String::from("Hello World"), 12, None);
     let value = test_struct.into_rusty_value();
     dbg!(&value);
 
@@ -47,7 +47,7 @@ fn it_handles_unnamed_fields() {
         assert_eq!(&s.name, "TestStructUnnamed");
 
         if let Fields::Unnamed(fields) = s.fields {
-            assert_eq!(fields.len(), 2);
+            assert_eq!(fields.len(), 3);
         } else {
             panic!("Struct wasn't serialized as unnamed struct")
         }

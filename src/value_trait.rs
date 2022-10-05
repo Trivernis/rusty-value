@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ffi::OsString, path::PathBuf};
 
-use crate::{Fields, Float, HashablePrimitive, HashableValue, Primitive, Struct, Value};
+use crate::{Enum, Fields, Float, HashablePrimitive, HashableValue, Primitive, Struct, Value};
 
 pub trait RustyValue {
     fn into_rusty_value(self) -> Value;
@@ -171,6 +171,25 @@ impl RustyValue for PathBuf {
             name: String::from("PathBuf"),
             fields: Fields::Unnamed(vec![self.into_os_string().into_rusty_value()]),
         })
+    }
+}
+
+impl<T: RustyValue> RustyValue for Option<T> {
+    fn into_rusty_value(self) -> Value {
+        let name = String::from("Option");
+
+        match self {
+            Some(val) => Value::Enum(Enum {
+                name,
+                variant: String::from("Some"),
+                fields: Fields::Unnamed(vec![val.into_rusty_value()]),
+            }),
+            None => Value::Enum(Enum {
+                name,
+                variant: String::from("None"),
+                fields: Fields::Unit,
+            }),
+        }
     }
 }
 
