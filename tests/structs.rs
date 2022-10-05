@@ -1,5 +1,4 @@
 use rusty_value::{Fields, RustyValue, Value};
-use rusty_value_derive::*;
 
 #[derive(RustyValue)]
 struct TestStructNamed {
