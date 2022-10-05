@@ -24,6 +24,7 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
     let name = ident.to_string();
     let (impl_generics, ty_generics, _) = input.generics.split_for_impl();
     let where_clause = add_rusty_bound(&input.generics);
+    let rusty_value = get_rusty_value_crate();
 
     match &struct_data.fields {
         syn::Fields::Named(FieldsNamed { named, .. }) => {
@@ -35,9 +36,9 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
             let field_count = named.len();
 
             TokenStream::from(quote! {
-                impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
-                    fn into_rusty_value(self) -> rusty_value::Value {
-                        use rusty_value::*;
+                impl #impl_generics #rusty_value::RustyValue for #ident #ty_generics #where_clause {
+                    fn into_rusty_value(self) -> #rusty_value::Value {
+                        use #rusty_value::*;
                         let mut values = std::collections::HashMap::with_capacity(#field_count);
 
                         #(
@@ -61,9 +62,9 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
             let field_count = unnamed.len();
 
             TokenStream::from(quote! {
-                impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
-                    fn into_rusty_value(self) -> rusty_value::Value {
-                        use rusty_value::*;
+                impl #impl_generics #rusty_value::RustyValue for #ident #ty_generics #where_clause {
+                    fn into_rusty_value(self) -> #rusty_value::Value {
+                        use #rusty_value::*;
                         let mut values = Vec::with_capacity(#field_count);
 
                         #(
@@ -79,9 +80,9 @@ fn derive_struct(input: &DeriveInput, struct_data: &DataStruct) -> TokenStream {
             })
         }
         syn::Fields::Unit => TokenStream::from(quote! {
-                impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
-                    fn into_rusty_value(self) -> rusty_value::Value {
-                        use rusty_value::*;
+                impl #impl_generics #rusty_value::RustyValue for #ident #ty_generics #where_clause {
+                    fn into_rusty_value(self) -> #rusty_value::Value {
+                        use #rusty_value::*;
                         Value::Struct(Struct{
                             name: #name.to_string(),
                             fields: Fields::Unit,
@@ -101,14 +102,15 @@ fn derive_enum(input: &DeriveInput, enum_data: &DataEnum) -> TokenStream {
         .iter()
         .map(|v| create_enum_value_match(ident, v))
         .collect::<Vec<_>>();
+    let rusty_value = get_rusty_value_crate();
 
     TokenStream::from(quote! {
-        impl #impl_generics rusty_value::RustyValue for #ident #ty_generics #where_clause {
-            fn into_rusty_value(self) -> rusty_value::Value {
+        impl #impl_generics #rusty_value::RustyValue for #ident #ty_generics #where_clause {
+            fn into_rusty_value(self) -> #rusty_value::Value {
                 let enum_val = match self {
                     #( #variant_matchers )*
                 };
-                rusty_value::Value::Enum(enum_val)
+                #rusty_value::Value::Enum(enum_val)
             }
         }
     })
@@ -118,6 +120,7 @@ fn create_enum_value_match(ident: &syn::Ident, variant: &Variant) -> proc_macro2
     let enum_name = ident.to_string();
     let variant_ident = &variant.ident;
     let variant_name = variant_ident.to_string();
+    let rusty_value = get_rusty_value_crate();
 
     match &variant.fields {
         syn::Fields::Named(FieldsNamed { named, .. }) => {
@@ -130,7 +133,7 @@ fn create_enum_value_match(ident: &syn::Ident, variant: &Variant) -> proc_macro2
 
             quote! {
                 #ident::#variant_ident { #( #field_idents, )* } => {
-                    use rusty_value::*;
+                    use #rusty_value::*;
 
                     let mut fields = std::collections::HashMap::with_capacity(#field_count);
                     #(
@@ -154,7 +157,7 @@ fn create_enum_value_match(ident: &syn::Ident, variant: &Variant) -> proc_macro2
 
             quote! {
                 #ident::#variant_ident ( #( #field_names, )* ) => {
-                    use rusty_value::*;
+                    use #rusty_value::*;
 
                     let mut fields = Vec::with_capacity(#field_count);
                     #(
@@ -170,7 +173,7 @@ fn create_enum_value_match(ident: &syn::Ident, variant: &Variant) -> proc_macro2
         }
         syn::Fields::Unit => quote! {
             #ident::#variant_ident => {
-                use rusty_value::*;
+                use #rusty_value::*;
 
                 Enum {
                     name: #enum_name.to_string(),
@@ -196,4 +199,12 @@ fn add_rusty_bound(generics: &Generics) -> WhereClause {
         .predicates
         .extend(new_predicates);
     generics.where_clause.unwrap()
+}
+
+fn get_rusty_value_crate() -> proc_macro2::TokenStream {
+    use proc_macro_crate::{crate_name, FoundCrate};
+    match crate_name("rusty_value") {
+        Ok(FoundCrate::Itself) | Err(_) => quote!(rusty_value),
+        Ok(FoundCrate::Name(name)) => quote!(#name),
+    }
 }
