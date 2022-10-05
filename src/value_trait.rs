@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ffi::OsString, path::PathBuf};
 
-use crate::{Float, HashablePrimitive, HashableValue, Primitive, Value};
+use crate::{Fields, Float, HashablePrimitive, HashableValue, Primitive, Struct, Value};
 
 pub trait RustyValue {
     fn into_rusty_value(self) -> Value;
@@ -128,6 +128,7 @@ impl RustyValue for HashableValue {
                 HashablePrimitive::String(s) => Value::Primitive(Primitive::String(s)),
                 HashablePrimitive::Char(c) => Value::Primitive(Primitive::Char(c)),
                 HashablePrimitive::Bool(b) => Value::Primitive(Primitive::Bool(b)),
+                HashablePrimitive::OsString(o) => Value::Primitive(Primitive::OsString(o)),
             },
             HashableValue::List(l) => {
                 Value::List(l.into_iter().map(|v| v.into_rusty_value()).collect())
@@ -155,6 +156,21 @@ impl RustyValue for f64 {
     #[inline]
     fn into_rusty_value(self) -> Value {
         Value::Primitive(Primitive::Float(Float::F64(self)))
+    }
+}
+
+impl HashableRustyValue for OsString {
+    fn into_hashable_rusty_value(self) -> HashableValue {
+        HashableValue::Primitive(HashablePrimitive::OsString(self))
+    }
+}
+
+impl RustyValue for PathBuf {
+    fn into_rusty_value(self) -> Value {
+        Value::Struct(Struct {
+            name: String::from("PathBuf"),
+            fields: Fields::Unnamed(vec![self.into_os_string().into_rusty_value()]),
+        })
     }
 }
 

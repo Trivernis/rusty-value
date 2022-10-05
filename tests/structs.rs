@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use rusty_value::{Fields, RustyValue, Value};
 
 #[derive(RustyValue)]
@@ -5,6 +7,7 @@ struct TestStructNamed {
     foo: String,
     bar: u64,
     none: (),
+    path: PathBuf,
 }
 
 #[test]
@@ -13,6 +16,7 @@ fn it_handles_named_fields() {
         foo: String::from("Hello World"),
         bar: 12,
         none: (),
+        path: PathBuf::new(),
     };
     let value = test_struct.into_rusty_value();
     dbg!(&value);
@@ -21,7 +25,7 @@ fn it_handles_named_fields() {
         assert_eq!(&s.name, "TestStructNamed");
 
         if let Fields::Named(fields) = s.fields {
-            assert_eq!(fields.len(), 3);
+            assert_eq!(fields.len(), 4);
         } else {
             panic!("Struct wasn't serialized as named struct")
         }

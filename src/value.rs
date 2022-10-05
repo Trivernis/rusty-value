@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ffi::OsString};
 
 /// Represents a generic rust value
 #[derive(Clone, Debug, PartialEq)]
@@ -41,6 +41,7 @@ pub enum Primitive {
     Integer(Integer),
     Float(Float),
     String(String),
+    OsString(OsString),
     Char(char),
     Bool(bool),
 }
@@ -82,6 +83,7 @@ pub enum HashableValue {
 pub enum HashablePrimitive {
     Integer(Integer),
     String(String),
+    OsString(OsString),
     Char(char),
     Bool(bool),
 }
@@ -93,6 +95,7 @@ impl ToString for HashablePrimitive {
             HashablePrimitive::String(s) => s.to_owned(),
             HashablePrimitive::Char(c) => c.to_string(),
             HashablePrimitive::Bool(b) => b.to_string(),
+            HashablePrimitive::OsString(o) => o.to_string_lossy().into_owned(),
         }
     }
 }
