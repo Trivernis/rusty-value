@@ -4,6 +4,7 @@ use rusty_value::{Fields, RustyValue, Value};
 struct TestStructNamed {
     foo: String,
     bar: u64,
+    none: (),
 }
 
 #[test]
@@ -11,6 +12,7 @@ fn it_handles_named_fields() {
     let test_struct = TestStructNamed {
         foo: String::from("Hello World"),
         bar: 12,
+        none: (),
     };
     let value = test_struct.into_rusty_value();
     dbg!(&value);
@@ -19,7 +21,7 @@ fn it_handles_named_fields() {
         assert_eq!(&s.name, "TestStructNamed");
 
         if let Fields::Named(fields) = s.fields {
-            assert_eq!(fields.len(), 2);
+            assert_eq!(fields.len(), 3);
         } else {
             panic!("Struct wasn't serialized as named struct")
         }

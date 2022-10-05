@@ -8,6 +8,7 @@ pub enum Value {
     Enum(Enum),
     Map(HashMap<HashableValue, Value>),
     List(Vec<Value>),
+    None,
 }
 
 /// Represents an enum with a given variant
@@ -73,6 +74,7 @@ pub enum Float {
 pub enum HashableValue {
     Primitive(HashablePrimitive),
     List(Vec<HashableValue>),
+    None,
 }
 
 /// A primitive that can be used as a hash map key

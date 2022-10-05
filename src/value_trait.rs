@@ -114,6 +114,12 @@ impl HashableRustyValue for bool {
     }
 }
 
+impl HashableRustyValue for () {
+    fn into_hashable_rusty_value(self) -> HashableValue {
+        HashableValue::None
+    }
+}
+
 impl RustyValue for HashableValue {
     fn into_rusty_value(self) -> Value {
         match self {
@@ -126,6 +132,7 @@ impl RustyValue for HashableValue {
             HashableValue::List(l) => {
                 Value::List(l.into_iter().map(|v| v.into_rusty_value()).collect())
             }
+            HashableValue::None => Value::None,
         }
     }
 }
