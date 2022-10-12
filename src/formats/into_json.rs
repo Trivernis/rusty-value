@@ -1,7 +1,6 @@
-use serde_json::{Number, Value};
+use crate::*;
+use serde_json::Number;
 use std::string::ToString;
-
-use crate::{Enum, HashableValue, Primitive, RustyValue, Struct};
 
 /// Options for how to represent certain rust types
 /// as JSON
@@ -32,96 +31,96 @@ impl Default for EnumRepr {
 /// Trait to convert a value into a json value
 pub trait IntoJson {
     /// Converts the value into a json value with default options
-    fn into_json(self) -> Value;
+    fn into_json(self) -> serde_json::Value;
     /// Converts the value into a json value with the given options
-    fn into_json_with_options(self, options: &IntoJsonOptions) -> Value;
+    fn into_json_with_options(self, options: &IntoJsonOptions) -> serde_json::Value;
 }
 
 trait RustyIntoJson {
     /// Converts the value into a json value with default options
-    fn into_json(self) -> Value;
+    fn into_json(self) -> serde_json::Value;
     /// Converts the value into a json value with the given options
-    fn into_json_with_options(self, options: &IntoJsonOptions) -> Value;
+    fn into_json_with_options(self, options: &IntoJsonOptions) -> serde_json::Value;
 }
 
 impl RustyIntoJson for crate::Value {
     #[inline]
-    fn into_json(self) -> Value {
+    fn into_json(self) -> serde_json::Value {
         self.into_json_with_options(&IntoJsonOptions::default())
     }
 
-    fn into_json_with_options(self, opt: &IntoJsonOptions) -> Value {
+    fn into_json_with_options(self, opt: &IntoJsonOptions) -> serde_json::Value {
         match self {
             crate::Value::Primitive(p) => p.into_json_with_options(opt),
             crate::Value::Struct(s) => s.into_json_with_options(opt),
             crate::Value::Enum(e) => e.into_json_with_options(opt),
-            crate::Value::Map(m) => Value::Object(
+            crate::Value::Map(m) => serde_json::Value::Object(
                 m.into_iter()
                     .map(|(k, v)| (hashable_to_string(k), v.into_json_with_options(opt)))
                     .collect(),
             ),
-            crate::Value::List(l) => Value::Array(
+            crate::Value::List(l) => serde_json::Value::Array(
                 l.into_iter()
                     .map(|v| v.into_json_with_options(opt))
                     .collect(),
             ),
-            crate::Value::None => Value::Null,
+            crate::Value::None => serde_json::Value::Null,
         }
     }
 }
 
 impl IntoJson for Primitive {
-    fn into_json(self) -> Value {
+    fn into_json(self) -> serde_json::Value {
         match self {
             Primitive::Integer(i) => match i {
-                crate::Integer::USize(n) => Value::Number(n.into()),
-                crate::Integer::ISize(n) => Value::Number(n.into()),
-                crate::Integer::U8(n) => Value::Number(n.into()),
-                crate::Integer::I8(n) => Value::Number(n.into()),
-                crate::Integer::U16(n) => Value::Number(n.into()),
-                crate::Integer::I16(n) => Value::Number(n.into()),
-                crate::Integer::U32(n) => Value::Number(n.into()),
-                crate::Integer::I32(n) => Value::Number(n.into()),
-                crate::Integer::U64(n) => Value::Number(n.into()),
-                crate::Integer::I64(n) => Value::Number(n.into()),
-                crate::Integer::U128(n) => Value::Array(vec![
+                crate::Integer::USize(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::ISize(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::U8(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::I8(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::U16(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::I16(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::U32(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::I32(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::U64(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::I64(n) => serde_json::Value::Number(n.into()),
+                crate::Integer::U128(n) => serde_json::Value::Array(vec![
                     ((n >> 64) as u64).into(),
                     ((n & 0xFFFFFFFFFFFFFFFF) as u64).into(),
                 ]),
-                crate::Integer::I128(n) => Value::Array(vec![
+                crate::Integer::I128(n) => serde_json::Value::Array(vec![
                     ((n >> 64) as i64).into(),
                     ((n & 0xFFFFFFFFFFFFFFFF) as u64).into(),
                 ]),
             },
             Primitive::Float(f) => match f {
                 crate::Float::F32(f) => Number::from_f64(f as f64)
-                    .map(Value::Number)
-                    .unwrap_or(Value::Null),
+                    .map(serde_json::Value::Number)
+                    .unwrap_or(serde_json::Value::Null),
                 crate::Float::F64(f) => Number::from_f64(f)
-                    .map(Value::Number)
-                    .unwrap_or(Value::Null),
+                    .map(serde_json::Value::Number)
+                    .unwrap_or(serde_json::Value::Null),
             },
-            Primitive::String(s) => Value::String(s),
-            Primitive::OsString(o) => Value::String(o.to_string_lossy().into_owned()),
-            Primitive::Char(c) => Value::String(c.to_string()),
-            Primitive::Bool(b) => Value::Bool(b),
+            Primitive::String(s) => serde_json::Value::String(s),
+            Primitive::OsString(o) => serde_json::Value::String(o.to_string_lossy().into_owned()),
+            Primitive::Char(c) => serde_json::Value::String(c.to_string()),
+            Primitive::Bool(b) => serde_json::Value::Bool(b),
         }
     }
 
     #[inline]
-    fn into_json_with_options(self, _options: &IntoJsonOptions) -> Value {
+    fn into_json_with_options(self, _options: &IntoJsonOptions) -> serde_json::Value {
         self.into_json()
     }
 }
 
 impl IntoJson for Enum {
     #[inline]
-    fn into_json(self) -> Value {
+    fn into_json(self) -> serde_json::Value {
         self.into_json_with_options(&IntoJsonOptions::default())
     }
-    fn into_json_with_options(self, opt: &IntoJsonOptions) -> Value {
+    fn into_json_with_options(self, opt: &IntoJsonOptions) -> serde_json::Value {
         let value = match self.fields {
-            crate::Fields::Named(n) => Value::Object(
+            crate::Fields::Named(n) => serde_json::Value::Object(
                 n.into_iter()
                     .map(|(k, v)| (k, v.into_json_with_options(opt)))
                     .collect(),
@@ -130,26 +129,29 @@ impl IntoJson for Enum {
                 if u.len() == 1 {
                     u.remove(0).into_json_with_options(opt)
                 } else {
-                    Value::Array(
+                    serde_json::Value::Array(
                         u.into_iter()
                             .map(|v| v.into_json_with_options(opt))
                             .collect(),
                     )
                 }
             }
-            crate::Fields::Unit => Value::String(self.variant.clone()),
+            crate::Fields::Unit => serde_json::Value::String(self.variant.clone()),
         };
         match &opt.enum_repr {
             EnumRepr::Untagged => value,
             EnumRepr::ExternallyTagged => {
-                Value::Object([(self.variant, value)].into_iter().collect())
+                serde_json::Value::Object([(self.variant, value)].into_iter().collect())
             }
             EnumRepr::AdjacentlyTagged {
                 type_field,
                 value_field,
-            } => Value::Object(
+            } => serde_json::Value::Object(
                 [
-                    (type_field.to_owned(), Value::String(self.variant)),
+                    (
+                        type_field.to_owned(),
+                        serde_json::Value::String(self.variant),
+                    ),
                     (value_field.to_owned(), value),
                 ]
                 .into_iter()
@@ -161,12 +163,12 @@ impl IntoJson for Enum {
 
 impl IntoJson for Struct {
     #[inline]
-    fn into_json(self) -> Value {
+    fn into_json(self) -> serde_json::Value {
         self.into_json_with_options(&IntoJsonOptions::default())
     }
-    fn into_json_with_options(self, opt: &IntoJsonOptions) -> Value {
+    fn into_json_with_options(self, opt: &IntoJsonOptions) -> serde_json::Value {
         match self.fields {
-            crate::Fields::Named(n) => Value::Object(
+            crate::Fields::Named(n) => serde_json::Value::Object(
                 n.into_iter()
                     .map(|(k, v)| (k, v.into_json_with_options(opt)))
                     .collect(),
@@ -175,26 +177,26 @@ impl IntoJson for Struct {
                 if u.len() == 1 {
                     u.remove(0).into_json_with_options(opt)
                 } else {
-                    Value::Array(
+                    serde_json::Value::Array(
                         u.into_iter()
                             .map(|v| v.into_json_with_options(opt))
                             .collect(),
                     )
                 }
             }
-            crate::Fields::Unit => Value::String(self.name),
+            crate::Fields::Unit => serde_json::Value::String(self.name),
         }
     }
 }
 
 impl<R: RustyValue> IntoJson for R {
     #[inline]
-    fn into_json(self) -> Value {
+    fn into_json(self) -> serde_json::Value {
         self.into_json_with_options(&IntoJsonOptions::default())
     }
 
     #[inline]
-    fn into_json_with_options(self, opt: &IntoJsonOptions) -> Value {
+    fn into_json_with_options(self, opt: &IntoJsonOptions) -> serde_json::Value {
         self.into_rusty_value().into_json_with_options(opt)
     }
 }
@@ -218,7 +220,7 @@ mod test {
 
     use crate as rusty_value;
     use crate::into_json::IntoJsonOptions;
-    use crate::RustyValue;
+    use crate::*;
 
     use super::IntoJson;
 

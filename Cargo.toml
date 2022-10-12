@@ -3,7 +3,7 @@ members = [".", "derive"]
 
 [package]
 name = "rusty-value"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/Trivernis/rusty-value"
@@ -16,7 +16,7 @@ serde_json = { version = "1.0.85", default-features = false, optional = true, fe
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.rusty-value-derive]
-version = "0.1.0"
+version = "0.1.1"
 path = "./derive"
 optional = true
 
