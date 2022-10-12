@@ -1,3 +1,4 @@
+use rusty_value::*;
 use rusty_value::{Fields, RustyValue, Value};
 
 #[allow(dead_code)]

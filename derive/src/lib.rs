@@ -204,7 +204,8 @@ fn add_rusty_bound(generics: &Generics) -> WhereClause {
 fn get_rusty_value_crate() -> proc_macro2::TokenStream {
     use proc_macro_crate::{crate_name, FoundCrate};
     match crate_name("rusty_value") {
-        Ok(FoundCrate::Itself) | Err(_) => quote!(rusty_value),
+        Ok(FoundCrate::Itself) => quote!(rusty_value),
+        Err(_) => quote!(crate),
         Ok(FoundCrate::Name(name)) => quote!(#name),
     }
 }

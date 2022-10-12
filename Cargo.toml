@@ -3,12 +3,15 @@ members = [".", "derive"]
 
 [package]
 name = "rusty-value"
-version = "0.4.2"
+version = "0.5.0"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/Trivernis/rusty-value"
 description = "Create a generic inspectable value from any rust type"
 authors = ["trivernis <trivernis@proton.me>"]
+
+[dependencies]
+serde_json = { version = "1.0.85", default-features = false, optional = true, features = ["std"]}
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,6 +23,7 @@ optional = true
 [features]
 default = []
 derive = ["rusty-value-derive"]
+json = ["serde_json"]
 
 [dev-dependencies.rusty-value-derive]
 path = "./derive"

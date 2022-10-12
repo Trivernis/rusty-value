@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use rusty_value::*;
 use rusty_value::{Fields, RustyValue, Value};
 
 #[derive(RustyValue)]

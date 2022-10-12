@@ -12,8 +12,7 @@ The trait `RustyValue` allows one to create a `rusty_value::Value` for any
 type that implements it. This trait can be derived if the `derive` **feature** is enabled.
 
 ```rust
-
-use rusty_value::{RustyValue, Value};
+use rusty_value::*;
 
 #[derive(RustyValue)]
 struct MyStruct {

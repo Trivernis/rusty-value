@@ -1,7 +1,9 @@
 #![doc=include_str!("../README.md")]
 
+pub(crate) mod formats;
 pub(crate) mod value;
 pub(crate) mod value_trait;
+pub use formats::*;
 pub use value::*;
 pub use value_trait::*;
 
